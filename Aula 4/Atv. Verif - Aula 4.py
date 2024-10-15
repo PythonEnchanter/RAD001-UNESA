@@ -1,13 +1,7 @@
-#O txt é salvo na mesma pasta em que está o arquivo .py
-
-with open("crescente.txt", "w") as file:
-    for i in range(100):
-        file.write(f"{i+1}\n")
-
-#X------------------- Exec 2 --------------------------X
+import re
 
 #Adiciona alunos ao arquivo
-def insereAluno(nome, email):
+def insereAluno(nome, email, curso):
 
     #w+ exclui os dados do arquivo caso ele já exista
     try:
@@ -16,7 +10,7 @@ def insereAluno(nome, email):
         arq = open("CadastroAlunos.txt", "w+")
         arq.seek(0, 2)
     
-    arq.write(f"{nome.upper()};{email.lower()}\n\n")
+    arq.write(f"{nome.upper()};{email.lower()};{curso}\n\n")
     print(f"Aluno {nome} cadastrado\n")
 
     arq.close()
@@ -33,7 +27,7 @@ def adicionarNota(nome):
             '''procura o nome do aluno em cada linha do arquivo e
                compara com o primeiro elemento [repetir em cada
                função que use um aluno]'''
-            if nome.lower() in lines[i].lower():
+            if nome.lower() == lines[i].split(";")[0].lower():
                 student = True
 
                 grades = []
@@ -73,9 +67,19 @@ def lerNotas(nome):
             print(f"Notas: {lines[i+1]}");
             break
         
-    if not student: print("Estudante não cadastrado")
+    if not student: print("ESTUDANTE NÃO CADASTRADO")
 
     arq.close()
+
+#trata entradas com número
+def remNumInput(**dados):
+    info = []
+    
+    for key, value in dados.items():
+        value = re.sub(r"\d", '', value)
+        info.append(value)
+
+    return str(info[0])
 
 while True:
     functions = [1, 2, 3, 4]
@@ -84,13 +88,39 @@ while True:
 
     match u_input:
         case 1:
-            aluno = input("Insira nome e e-mail do aluno (separados por espaço): ").rsplit(maxsplit=1)
-            insereAluno(aluno[0], aluno[1])
+            aluno = []
+            cnt = 0
+            
+            print("Insira os dados do aluno [nome, e-mail, curso]: ")
+            while True:
+                u_input = input("Próxima info: ")
+                if(cnt == 0 or cnt == 2): u_input = remNumInput(entrada=u_input)
+                
+                if u_input == '' and cnt == 3:
+                    break
+                else:
+                    if u_input == '':
+                        print("Entrada vazia\n");
+                        continue
+                    cnt += 1
+                    aluno.append(u_input)
+
+            insereAluno(aluno[0], aluno[1], aluno[2])
         case 2:
             aluno = input("Insira nome do aluno: ")
+            aluno = remNumInput(entrada=aluno)
+            
+            if(len(aluno)==0):
+                print("Entrada vazia\n");
+                break
             adicionarNota(aluno)
         case 3:
             aluno = input("Insira nome do aluno: ")
+            aluno = remNumInput(entrada=aluno)
+
+            if(len(aluno)==0):
+                print("Entrada vazia\n");
+                break
             lerNotas(aluno)
         case 4:
             quit()
